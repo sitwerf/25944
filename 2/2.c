@@ -9,11 +9,11 @@ int main()
     time_t now;
     struct tm *sp;
 
-    setenv("TZ", "PST8", 1);      // PST = UTC - 8 часов
-    tzset();                       // установить часовой пояс
+    setenv("TZ", "PST8PDT", 1);   // PST зимой, PDT летом
+    tzset();
 
-    time(&now);                    // текущее время
-    sp = localtime(&now);          // получить время в PST
+    time(&now);
+    sp = localtime(&now);
 
     printf("%02d/%02d/%d %02d:%02d %s\n",
            sp->tm_mon + 1,

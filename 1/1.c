@@ -5,6 +5,7 @@
 #include <sys/resource.h>
 #include <errno.h>
 
+
 #define MAX_OPT 256
 
 extern char *optarg;
@@ -37,6 +38,7 @@ static int parse_neotric_long(const char *s, long *out)
     *out = v;
     return 0;
 }
+
 
 
 int main(int argc, char *argv[])
@@ -110,7 +112,7 @@ int main(int argc, char *argv[])
                        (int)getpid(), (int)getppid(), (int)getpgrp());
                 break;
 
-            case 'u':   // ограничение на количество процессов
+            case 'u':   // ограничение на количество процессов (ulimit -u)
             {
                 long n;
 #ifdef RLIMIT_NPROC

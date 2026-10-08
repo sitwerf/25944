@@ -20,22 +20,19 @@ int main()
 
     while (fgets(buffer, sizeof(buffer), stdin) != NULL) {
 
-        // Ввод заканчивается, если первый символ строки - точка
-        if (buffer[0] == '.')
+        if (buffer[0] == '.')           //ввод заканчивается, если первый символ строки - точка
             break;
 
         size_t len = strlen(buffer);
 
-        // Выделяем память под новый узел
-        struct Node *new_node = malloc(sizeof(struct Node));
+        struct Node *new_node = malloc(sizeof(struct Node));          //выделяем память под новый узел
 
         if (new_node == NULL) {
             perror("malloc");
             return 1;
         }
 
-        // +1 нужен для завершающего символа '\0'
-        new_node->str = malloc(len + 1);
+        new_node->str = malloc(len + 1);            // +1 для завершающего символа '\0'
 
         if (new_node->str == NULL) {
             perror("malloc");
@@ -46,16 +43,14 @@ int main()
         // Копируем строку из buffer в динамическую память
         strcpy(new_node->str, buffer);
 
-        // Новый элемент пока последний в списке
+        //новый элемент пока последний в списке
         new_node->next = NULL;
 
-        // Если список пустой
-        if (head == NULL) {
+        if (head == NULL) {             //если список пустой
             head = new_node;
             tail = new_node;
         }
-        else {
-            // Добавляем новый элемент в конец списка
+        else {                  //добавляем новый элемент в конец списка
             tail->next = new_node;
             tail = new_node;
         }
@@ -63,7 +58,7 @@ int main()
 
     printf("\nStrings:\n");
 
-    // Выводим все строки из списка
+    //выводим все строки из списка
     struct Node *current = head;
 
     while (current != NULL) {
@@ -71,7 +66,7 @@ int main()
         current = current->next;
     }
 
-    // Освобождаем выделенную память
+    //освобождаем выделенную память
     current = head;
 
     while (current != NULL) {

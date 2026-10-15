@@ -1,82 +1,180 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LEN 1024
+typedef struct ListItem {
+    char *value;
+    struct ListItem *next;
+} ListItem;
 
-struct Node {
-    char *str;
-    struct Node *next;
-};
+int input_string(char **out) {
+    char chunk[256];
+    char *data = NULL;
+    size_t used = 0;
+    size_t allocated = 0;
 
-int main()
-{
-    char buffer[MAX_LEN];
+    *out = NULL;
 
-    struct Node *head = NULL;
-    struct Node *tail = NULL;
+    while (fgets(chunk, sizeof(chunk), stdin)) {
+        size_t count = strlen(chunk);
+        int end = count > 0 && chunk[count - 1] == '\n';
 
-    printf("Enter strings:\n");
+        if (end)
+            count--;
 
-    while (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        if (count > SIZE_MAX - used - 1) {
+            free(data);
+            return -1;
+        }
 
-        if (buffer[0] == '.')           //ввод заканчивается, если первый символ строки - точка
+        size_t required = used + count + 1;
+
+        if (required > allocated) {
+            size_t size = allocated ? allocated : sizeof(chunk);
+
+            while (size < required) {
+                if (size > SIZE_MAX / 2) {
+                    size = required;
+                    break;
+                }
+                size *= 2;
+            }
+
+            char *temp = realloc(data, size);
+
+            if (!temp) {
+                free(data);
+                return -1;
+            }
+
+            data = temp;
+            allocated = size;
+        }
+
+        memcpy(data + used, chunk, count);
+        used += count;
+        data[used] = '\0';
+
+        if (end) {
+            *out = data;
+            return 1;
+        }
+    }
+
+    if (ferror(stdin)) {
+        free(data);
+        return -1;
+    }
+
+    *out = data;
+    return data != NULL;
+}
+
+static int is_arrow(char c) {
+    return c == 'A' || c == 'B' || c == 'C' || c == 'D';
+}
+
+void filter_string(char *s) {
+    size_t src = 0;
+    size_t dst = 0;
+
+    while (s[src]) {
+        if ((unsigned char)s[src] == 27) {
+            if (s[src + 1] == '[' || s[src + 1] == 'O') {
+                if (is_arrow(s[src + 2]))
+                    src += 3;
+                else
+                    src += 2;
+            } else {
+                src++;
+            }
+
+            continue;
+        }
+
+        s[dst++] = s[src++];
+    }
+
+    s[dst] = '\0';
+}
+
+int append_item(ListItem ***position, char *value) {
+    ListItem *item = malloc(sizeof(ListItem));
+
+    if (!item)
+        return 0;
+
+    item->value = value;
+    item->next = NULL;
+
+    **position = item;
+    *position = &item->next;
+
+    return 1;
+}
+
+void destroy_list(ListItem *item) {
+    while (item) {
+        ListItem *following = item->next;
+        free(item->value);
+        free(item);
+        item = following;
+    }
+}
+
+int main(void) {
+    ListItem *first = NULL;
+    ListItem **end = &first;
+    int exit_code = EXIT_SUCCESS;
+
+    while (1) {
+        char *str = NULL;
+        int state = input_string(&str);
+
+        if (state == 0)
             break;
 
-        size_t len = strlen(buffer);
-
-        struct Node *new_node = malloc(sizeof(struct Node));          //выделяем память под новый узел
-
-        if (new_node == NULL) {
-            perror("malloc");
-            return 1;
+        if (state < 0) {
+            fprintf(stderr, "Ошибка чтения или выделения памяти\n");
+            exit_code = EXIT_FAILURE;
+            break;
         }
 
-        new_node->str = malloc(len + 1);            // +1 для завершающего символа '\0'
+        filter_string(str);
 
-        if (new_node->str == NULL) {
-            perror("malloc");
-            free(new_node);
-            return 1;
+        if (*str == '.') {
+            free(str);
+            break;
         }
 
-        // Копируем строку из buffer в динамическую память
-        strcpy(new_node->str, buffer);
-
-        //новый элемент пока последний в списке
-        new_node->next = NULL;
-
-        if (head == NULL) {             //если список пустой
-            head = new_node;
-            tail = new_node;
+        if (*str == '\0') {
+            free(str);
+            continue;
         }
-        else {                  //добавляем новый элемент в конец списка
-            tail->next = new_node;
-            tail = new_node;
+
+        if (!append_item(&end, str)) {
+            fprintf(stderr, "Не удалось создать элемент списка\n");
+            free(str);
+            exit_code = EXIT_FAILURE;
+            break;
         }
     }
 
-    printf("\nStrings:\n");
+    if (exit_code == EXIT_SUCCESS) {
+        for (ListItem *current = first;
+             current != NULL;
+             current = current->next) {
+            if (puts(current->value) == EOF) {
+                exit_code = EXIT_FAILURE;
+                break;
+            }
+        }
 
-    //выводим все строки из списка
-    struct Node *current = head;
-
-    while (current != NULL) {
-        printf("%s", current->str);
-        current = current->next;
+        if (fflush(stdout) == EOF)
+            exit_code = EXIT_FAILURE;
     }
 
-    //освобождаем выделенную память
-    current = head;
-
-    while (current != NULL) {
-        struct Node *next = current->next;
-
-        free(current->str);
-        free(current);
-
-        current = next;
-    }
-
-    return 0;
+    destroy_list(first);
+    return exit_code;
 }

@@ -127,8 +127,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    close(fd);
-
     LineInfo *table = NULL;
     size_t count = 0;
 
@@ -140,6 +138,7 @@ int main(int argc, char *argv[]) {
         if (file_size > 0)
             munmap(data, file_size);
 
+        close(fd);
         return 1;
     }
 
@@ -162,6 +161,7 @@ int main(int argc, char *argv[]) {
         if (file_size > 0)
             munmap(data, file_size);
 
+        close(fd);
         return 1;
     }
 
@@ -219,5 +219,6 @@ int main(int argc, char *argv[]) {
     if (file_size > 0)
         munmap(data, file_size);
 
+    close(fd);
     return 0;
 }

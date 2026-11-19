@@ -1,14 +1,16 @@
-# macOS
-.DS_Store
+/m.bulygin/task1/task1
+/m.bulygin/task2/task2
+/m.bulygin/task3/task3
+/m.bulygin/task4/task4
+/m.bulygin/task5/task5
+/m.bulygin/task6/task6
+/m.bulygin/task7/task7
 
-# Настройки редактора
-.vscode/
+*.swp
+*.swo
+*.swn
+.nfs*
 
-# Скомпилированные программы
-*.o
-*.out
-prog
-3/3
-
-# Случайно склонированная копия репозитория
-25944/
+core
+core.*
+a.out

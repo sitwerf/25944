@@ -1,0 +1,23 @@
+# собранные программы
+task1/task1
+task2/task2
+task3/task3
+task4/task4
+task5/task5
+task6/task6
+task7/task7
+task9/9.1
+task9/9.2
+task10/10
+task17/17
+task18/18
+task21/21
+task25/25
+prog
+a.out
+*.dSYM/
+*.o
+
+# служебные файлы
+.DS_Store
+.vscode/
